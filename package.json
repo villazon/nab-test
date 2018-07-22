@@ -1,0 +1,12 @@
+{
+  "name": "nab-test",
+  "dependencies": {},
+  "keywords": [],
+  "license": "ISC",
+  "repository": {
+    "type": "git"
+  },
+  "scripts": {
+    "test": "node app.js"
+  }
+}
