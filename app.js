@@ -1,5 +1,5 @@
 // do not require
-unction testNAB() {
+function testNAB() {
     var arr = [1,2];
     arr[6] = 1; // creates non-contiguous array;
     arr[10] = 3;
