@@ -1,0 +1,13 @@
+gathering data...
+-------------Fix Array Refactor Report-------------
+Array created at the following locations may be special-typed:
+location: (jitprof-test/typedarray.js:1:71:1:78)
+	[Oper-Count]:	2001
+	[Max-Indices]:	["1003"]
+	[Refactor-Opts]: ["uint16arr","uint32arr","int16arr","int32arr","float32arr","float64arr"]
+	[Func-Used]: ["push"]
+	[Prop-Get]: ["push"]
+[****]typedArray: 1
+---------------------------------------------------
+Following arrays can not be typed:
+[x]	(jitprof-test/typedarray.js:2:9:2:12)	array stores non-numeric elements

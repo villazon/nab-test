@@ -1,0 +1,24 @@
+
+
+
+---------------------------
+Created 9 hidden classes.
+f_count: 0
+
+property access at (jitprof-test/trackhiddenclass.js:20:10:20:18) has missed cache 1998 time(s).
+  accessed property "a" of object created at undefined 1998 time(s) 
+  layout [__proto__:f2|b:n|a:n|]:
+	put field: a observed 500 time(s)
+  layout [__proto__:f3|a:n|b:n|]:
+	put field: a observed 999 time(s)
+  layout [__proto__:f2|a:n|b:n|]:
+	put field: a observed 499 time(s)
+property access at (jitprof-test/trackhiddenclass.js:20:21:20:29) has missed cache 1998 time(s).
+  accessed property "b" of object created at undefined 1998 time(s) 
+  layout [__proto__:f2|b:n|a:n|]:
+	put field: b observed 500 time(s)
+  layout [__proto__:f3|a:n|b:n|]:
+	put field: b observed 999 time(s)
+  layout [__proto__:f2|a:n|b:n|]:
+	put field: b observed 499 time(s)
+[****]HiddenClass: 2

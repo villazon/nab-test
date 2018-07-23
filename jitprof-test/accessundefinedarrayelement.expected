@@ -1,0 +1,7 @@
+---------------------------
+Report of loading undeclared or deleted array elements:
+ * [location: (jitprof-test/accessundefinedarrayelement.js:3:8:3:12)] <- No. usages: 1
+ * [location: (jitprof-test/accessundefinedarrayelement.js:3:15:3:19)] <- No. usages: 1
+...
+Number of loading undeclared or deleted array elements spotted: 2
+[****]AccessUndefArrayElem: 2

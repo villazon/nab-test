@@ -1,0 +1,5 @@
+---------------------------
+Report of binary operation on undefined value:
+ * [location: (jitprof-test/binonundef.js:3:9:3:12)] <- No. usages: 1
+Number of statements that perform binary operation on undefined values: 1
+[****]BinaryOpUndef: 1

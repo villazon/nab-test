@@ -1,0 +1,9 @@
+---------------------------
+Report of Polymorphic Binary Operations:
+* Polymorphic binary operation at (jitprof-test/polyfunccall.js:2:10:2:13)
+	Hit: 1	Miss: 2
+	Count: 2	types: float + float
+	Count: 1	types: string + float
+	Count: 1	types: string + string
+Report of Polymorphic Unary Operations:
+[****]PolyFun: 1
