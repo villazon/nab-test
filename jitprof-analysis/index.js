@@ -22,7 +22,7 @@ const fs = require('fs');
 
 var report = {reponame: "NABREPONAME", hash: "NABHASH"};
 J$._jitprof = report;
-J$._excludes = "npm,mocha,taper";
+J$._excludes = "npm,mocha,taper,grunt";
 
 //don't want the analysis output change the test result
 
