@@ -20,8 +20,7 @@
 const crypto = require('crypto');
 const fs = require('fs');
 
-var homeDir = process.cwd();
-var report = {reponame: homeDir, hash: "NABHASH"};
+var report = {reponame: "NABREPONAME", hash: "NABHASH"};
 J$._jitprof = report;
 J$._excludes = "npm,mocha,taper";
 
