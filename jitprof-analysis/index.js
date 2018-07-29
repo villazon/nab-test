@@ -69,7 +69,7 @@ require("./TypedArray")
 
 
 function dumpResult(){
-  var f = "/tmp/jitprof_"+hash;
+  var f = "/tmp/jitprof_"+Math.floor((new Date).getTime());
   fs.writeFileSync(f, JSON.stringify(J$._jitprof));
 }
 
