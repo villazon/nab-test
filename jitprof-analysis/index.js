@@ -21,9 +21,11 @@ const crypto = require('crypto');
 const fs = require('fs');
 
 var homeDir = process.cwd();
-var hash = crypto.createHash('md5').update(homeDir).digest("hex") 
-var report = {home: homeDir, hash: hash};
+var report = {reponame: homeDir, hash: "NABHASH"};
 J$._jitprof = report;
+J$._excludes = "npm,mocha,taper";
+
+//don't want the analysis output change the test result
 
 function getModuleName(filePath) {
   var npmIdx = filePath.lastIndexOf("node_modules/");

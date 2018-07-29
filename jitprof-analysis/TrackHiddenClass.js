@@ -264,6 +264,8 @@
         this.getFieldPre = function(iid, base, offset, isComputed, isOpAssign, isMethodCall) {
             var isStr = isString(base);
             if(isStr) return;
+            if(typeof offset == 'symbol')
+              return;
             var result = isArray_getShadow(base);
             if (!result.isArray) {
                 var sobj = result.sobj;
@@ -279,6 +281,8 @@
 
         this.putFieldPre = function(iid, base, offset, val, isComputed, isOpAssign) {
             var isStr = isString(base);
+            if(typeof offset == 'symbol')
+              return;
             if(!isStr) {
                 var result = isArray_getShadow(base);
                 if (!result.isArray) {
@@ -315,12 +319,12 @@
         }
 
         this.endExecution = function() {
-            console.log('\n\n');
-            console.log("---------------------------");
-            console.log("Created " + count + " hidden classes.");
-            console.log('f_count: ' + f_count);
+            //console.log('\n\n');
+            //console.log("---------------------------");
+            //console.log("Created " + count + " hidden classes.");
+            //console.log('f_count: ' + f_count);
             
-            console.log();
+            //console.log();
             var tmp = [];
             for (var iid in info) {
                 if (HOP(info, iid)) {
@@ -343,11 +347,11 @@
                 if (x.count > MIN_CACHE_HITS) {
                     var meta = x.meta;
                     num++;
-                    console.log("property access at " + iidToLocation(x.iid) + " has missed cache " + x.count + " time(s).");
+                    //console.log("property access at " + iidToLocation(x.iid) + " has missed cache " + x.count + " time(s).");
                     J$._jitprof.addEntry("TrackHiddenClass", "_", iidToLocation(x.iid), x.count);
                     for (var loc in meta.objectLocs) {
                         if (HOP(meta.objectLocs, loc)) {
-                            console.log("  accessed property \"" + meta.lastKey.substring(meta.lastKey.indexOf(":") + 1) + "\" of object created at " + iidToLocation(loc) + " " + meta.objectLocs[loc] + " time(s) ");
+                            //console.log("  accessed property \"" + meta.lastKey.substring(meta.lastKey.indexOf(":") + 1) + "\" of object created at " + iidToLocation(loc) + " " + meta.objectLocs[loc] + " time(s) ");
                         }
                     }
                     var mergeDB = {};
@@ -365,14 +369,14 @@
                     }
                     for (var layout in mergeDB) {
                         if (HOP(mergeDB, layout)) {
-                            console.log(mergeDB[layout]);
+                            //console.log(mergeDB[layout]);
                         }
                     }
                 }
             }
-            console.log('[****]HiddenClass: ' + num);
+            //console.log('[****]HiddenClass: ' + num);
         };
 
     }
-    sandbox.analysis = new TrackHiddenClass();
+    sandbox.addAnalysis(new TrackHiddenClass(), {internal: false, excludes:J$._excludes});
 })(J$);

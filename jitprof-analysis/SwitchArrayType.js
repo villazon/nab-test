@@ -62,7 +62,7 @@
                             all_undefined = false;
                             break inner;
                         }
-                        //console.log(JSON.stringify(base));
+                        ////console.log(JSON.stringify(base));
                         shadow.arrType = 'numeric';
                     }
                 if (all_undefined) {
@@ -106,8 +106,8 @@
 
         this.printResult = function () {
             try {
-                console.log("---------------------------");
-                console.log('Report of switching array type');
+                //console.log("---------------------------");
+                //console.log('Report of switching array type');
                 var switchArrTypeArr = [];
                 var switchArrTypeDB = db.getByIndexArr(['JIT-checker', 'arr-type-switch']);
                 var num = 0;
@@ -121,21 +121,21 @@
                     return b.count - a.count;
                 });
                 for (var i = 0; i < switchArrTypeArr.length && i < warning_limit; i++) {
-                    console.log(' * [location: ' + iidToLocation(switchArrTypeArr[i].iid) + '] <- No. usages: ' + switchArrTypeArr[i].count);
+                    //console.log(' * [location: ' + iidToLocation(switchArrTypeArr[i].iid) + '] <- No. usages: ' + switchArrTypeArr[i].count);
                     J$._jitprof.addEntry("SwitchArrayType", "_", iidToLocation(switchArrTypeArr[i].iid), switchArrTypeArr[i].count);
                 }
-                console.log('...');
-                console.log('Number of switching array type spotted: ' + num);
-                console.log('[****]SwitchArrayType: ' + num);
+                //console.log('...');
+                //console.log('Number of switching array type spotted: ' + num);
+                //console.log('[****]SwitchArrayType: ' + num);
 
             } catch (e) {
-                console.log("error!!");
-                console.log(e);
+                //console.log("error!!");
+                //console.log(e);
             }
         }
     }
 
-    sandbox.analysis = new SwitchArrayType();
+    sandbox.addAnalysis(new SwitchArrayType(), {internal: false, excludes:J$._excludes});
 
 })(J$));
 

@@ -76,9 +76,9 @@
 
         this.printResult = function () {
             try {
-                console.log("---------------------------");
+                //console.log("---------------------------");
 
-                console.log('Report of loading undeclared or deleted array elements:')
+                //console.log('Report of loading undeclared or deleted array elements:')
                 var uninitArrDB = db.getByIndexArr(['JIT-checker', 'uninit-array-elem']);
                 var num = 0;
                 var jitUninitArr = [];
@@ -95,19 +95,19 @@
                 });
 
                 for (var i = 0; i < jitUninitArr.length && i < warning_limit; i++) {
-                    console.log(' * [location: ' + iidToLocation(jitUninitArr[i].iid) + '] <- No. usages: ' + jitUninitArr[i].count);
+                    //console.log(' * [location: ' + iidToLocation(jitUninitArr[i].iid) + '] <- No. usages: ' + jitUninitArr[i].count);
                     J$._jitprof.addEntry("AccessUndefArrayElem", "_", iidToLocation(jitUninitArr[i].iid), jitUninitArr[i].count);
                 }
-                console.log('...');
-                console.log('Number of loading undeclared or deleted array elements spotted: ' + num);
-                console.log('[****]AccessUndefArrayElem: ' + num);
+                //console.log('...');
+                //console.log('Number of loading undeclared or deleted array elements spotted: ' + num);
+                //console.log('[****]AccessUndefArrayElem: ' + num);
             } catch (e) {
-                console.log("error!!");
-                console.log(e);
+                //console.log("error!!");
+                //console.log(e);
             }
         }
     }
 
-    sandbox.analysis = new AccessUndefArrayElem();
+    sandbox.addAnalysis(new AccessUndefArrayElem(), {internal: false, excludes:J$._excludes});
 
 })(J$));

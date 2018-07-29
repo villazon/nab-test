@@ -59,9 +59,9 @@
 
         this.printResult = function () {
             try {
-                console.log("---------------------------");
+                //console.log("---------------------------");
 
-                console.log('Report of binary operation on undefined value:');
+                //console.log('Report of binary operation on undefined value:');
                 var binaryUndefinedArr = [];
                 var binaryUndefinedDB = db.getByIndexArr(['JIT-checker', 'binary-undefined-op']);
                 var num = 0;
@@ -77,19 +77,19 @@
                     return b.count - a.count;
                 });
                 for (var i = 0; i < binaryUndefinedArr.length && i < warning_limit; i++) {
-                    console.log(' * [location: ' + iidToLocation(binaryUndefinedArr[i].iid) + '] <- No. usages: ' + binaryUndefinedArr[i].count);
+                    //console.log(' * [location: ' + iidToLocation(binaryUndefinedArr[i].iid) + '] <- No. usages: ' + binaryUndefinedArr[i].count);
                     J$._jitprof.addEntry("BinaryOpOnUndef", "_", iidToLocation(binaryUndefinedArr[i].iid), binaryUndefinedArr[i].count);
                 }
-                console.log('Number of statements that perform binary operation on undefined values: ' + num);
-                console.log('[****]BinaryOpUndef: ' + num);
+                //console.log('Number of statements that perform binary operation on undefined values: ' + num);
+                //console.log('[****]BinaryOpUndef: ' + num);
 
             } catch (e) {
-                console.log("error!!");
-                console.log(e);
+                //console.log("error!!");
+                //console.log(e);
             }
         }
     }
 
-    sandbox.analysis = new BinaryOpOnUndef();
+    sandbox.addAnalysis(new BinaryOpOnUndef(), {internal: false, excludes:J$._excludes});
 
 })(J$));
