@@ -17,7 +17,6 @@
 //Author: Haiyang Sun
 //DO NOT INSTRUMENT
 
-const crypto = require('crypto');
 const fs = require('fs');
 
 var report = {reponame: "NABREPONAME", hash: "NABHASH"};
