@@ -61,6 +61,7 @@ MongoClient.connect(url, { useNewUrlParser: true }, function(err, client) {
   var report = {
     all: 0,
     useful: 0,
+    unique: 0,
     numPrj: {0:0},
     jitprof: {
       any: 0,
@@ -75,6 +76,8 @@ MongoClient.connect(url, { useNewUrlParser: true }, function(err, client) {
     }
   };
 
+
+  var uniqueProjects = {};
 
   Promise.all([p1,p2]).then(
     ()=>{
@@ -115,6 +118,10 @@ MongoClient.connect(url, { useNewUrlParser: true }, function(err, client) {
           }else {
             _assert(numExit0 == 1);
             report.useful++;
+            if(!uniqueProjects[jitInfo.reponame]) {
+              uniqueProjects[jitInfo.reponame] = jitInfo;
+              report.unique++;
+            }
 
             //jitprof part
             var any = false;
