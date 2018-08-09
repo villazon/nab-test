@@ -109,8 +109,16 @@ MongoClient.connect(url, { useNewUrlParser: true }, function(err, client) {
           _assert(valid <= 1);
 
           if(!uniqueProjects[jitInfo.reponame]) {
-            uniqueProjects[jitInfo.reponame] = {valid:0, invalid:0, data: undefined};
+            uniqueProjects[jitInfo.reponame] = {valid:0, invalid:0, data: undefined, workers:{}};
             report.totalNumOfProjects++;
+          }
+          if(!uniqueProjects[jitInfo.reponame].workers[jitInfo.worker]){
+            uniqueProjects[jitInfo.reponame].workers[jitInfo.worker] = 0;
+          }
+          var oldNum = uniqueProjects[jitInfo.reponame].workers[jitInfo.worker]++;
+          if(oldNum >= 1) {
+            //shall we check all processes here?
+          }else {
           }
           if(valid == 0) {
             uniqueProjects[jitInfo.reponame].invalid++;
@@ -119,7 +127,7 @@ MongoClient.connect(url, { useNewUrlParser: true }, function(err, client) {
             _assert(numExit0 == 1);
             report.numOfReportsExit0++;
             if(uniqueProjects[jitInfo.reponame].valid == 0){
-              uniqueProjects[jitInfo.reponame].data = jitInfo;
+              uniqueProjects[jitInfo.reponame].data = {};
               report.numOfProjectWithExit0++;
               report.jitprof.none++;
             }
