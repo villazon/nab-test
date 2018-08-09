@@ -60,8 +60,10 @@ MongoClient.connect(url, { useNewUrlParser: true }, function(err, client) {
 
   var report = {
     totalNumOfReports: 0,
+    timeOutReports: 0,
     numOfReportsExit0: 0,
     totalNumOfProjects: 0,
+    timeoutProjects: 0,
     numOfProjectWithExit0: 0,
     jitprof: {
       any: 0,
@@ -104,13 +106,20 @@ MongoClient.connect(url, { useNewUrlParser: true }, function(err, client) {
             if(prjInfo.exitcode == "0" && prjInfo.worker == jitInfo.worker){
               valid++;
             }
+            if(prjInfo.timedout == "true") {
+              report.timeOutReports++;
+            }
           }
 
           _assert(valid <= 1);
 
           if(!uniqueProjects[jitInfo.reponame]) {
-            uniqueProjects[jitInfo.reponame] = {valid:0, invalid:0, data: undefined, workers:{}};
+            uniqueProjects[jitInfo.reponame] = {valid:0, invalid:0, data: undefined, workers:{}, timedout: false};
             report.totalNumOfProjects++;
+          }
+          if(prjInfo.timedout == "true") {
+            //worst guess
+            uniqueProjects[jitInfo.reponame].timedout = true;
           }
           if(!uniqueProjects[jitInfo.reponame].workers[jitInfo.worker]){
             uniqueProjects[jitInfo.reponame].workers[jitInfo.worker] = 0;
@@ -155,6 +164,12 @@ MongoClient.connect(url, { useNewUrlParser: true }, function(err, client) {
               merge.any = true;
             }
           }
+        }
+      }
+      for(var key in uniqueProjects){
+        var prj = uniqueProjects[key];
+        if(prj.timedout) {
+          report.timeoutProjects++;
         }
       }
     }).finally(
