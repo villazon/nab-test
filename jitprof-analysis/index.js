@@ -66,7 +66,8 @@ require("./TypedArray")
 
 
 
-function dumpResult(){
+function dumpResult(exitCode){
+  J$._jitprof.exitCode = exitCode;
   var f = "/tmp/jitprof_"+Math.floor((new Date).getTime());
   fs.writeFileSync(f, JSON.stringify(J$._jitprof));
 }
