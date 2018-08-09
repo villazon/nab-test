@@ -33,7 +33,7 @@ MongoClient.connect(url, { useNewUrlParser: true }, function(err, client) {
           jitprofData[v._id] = v;
         }
         console.log("jitprof data fetched");
-        console.log(jitprofData);
+        //console.log(jitprofData);
         return prjData;
       }
     );
@@ -48,7 +48,7 @@ MongoClient.connect(url, { useNewUrlParser: true }, function(err, client) {
           prjData[v.repo].push(v);
         }
         console.log("project data fetched");
-        console.log(prjData);
+        //console.log(prjData);
         return prjData;
       }
     );
@@ -59,10 +59,10 @@ MongoClient.connect(url, { useNewUrlParser: true }, function(err, client) {
 
 
   var report = {
-    all: 0,
-    useful: 0,
-    unique: 0,
-    numPrj: {0:0},
+    totalNumOfReports: 0,
+    numOfReportsExit0: 0,
+    totalNumOfProjects: 0,
+    numOfProjectWithExit0: 0,
     jitprof: {
       any: 0,
       none: 0,
@@ -76,7 +76,6 @@ MongoClient.connect(url, { useNewUrlParser: true }, function(err, client) {
     }
   };
 
-
   var uniqueProjects = {};
 
   Promise.all([p1,p2]).then(
@@ -85,16 +84,12 @@ MongoClient.connect(url, { useNewUrlParser: true }, function(err, client) {
         var jitInfo = jitprofData[_id];
         if(jitInfo) {
           var prjInfos = prjData[jitInfo.reponame];
-          report.all++;
+          report.totalNumOfReports++;
           if(!prjInfos){
             console.log("warning missing project info for "+JSON.stringify(jitInfo));
-            report.numPrj[0]++;
             continue;
           }
-          if(!report.numPrj[prjInfos.length]){
-            report.numPrj[prjInfos.length] = 0;
-          }
-          report.numPrj[prjInfos.length]++;
+          _assert(prjInfos.length == 1);
           var numExit0 = 0;
           var worker = 0;
           var valid = 0;
@@ -113,28 +108,43 @@ MongoClient.connect(url, { useNewUrlParser: true }, function(err, client) {
 
           _assert(valid <= 1);
 
+          if(!uniqueProjects[jitInfo.reponame]) {
+            uniqueProjects[jitInfo.reponame] = {valid:0, invalid:0, data: undefined};
+            report.totalNumOfProjects++;
+          }
           if(valid == 0) {
+            uniqueProjects[jitInfo.reponame].invalid++;
             continue;
           }else {
             _assert(numExit0 == 1);
-            report.useful++;
-            if(!uniqueProjects[jitInfo.reponame]) {
-              uniqueProjects[jitInfo.reponame] = jitInfo;
-              report.unique++;
+            report.numOfReportsExit0++;
+            if(uniqueProjects[jitInfo.reponame].valid == 0){
+              uniqueProjects[jitInfo.reponame].data = jitInfo;
+              report.numOfProjectWithExit0++;
+              report.jitprof.none++;
             }
+            uniqueProjects[jitInfo.reponame].valid++;
+            var merge = uniqueProjects[jitInfo.reponame].data;
 
             //jitprof part
             var any = false;
             for(var key in report.jitprof) {
               if(jitInfo[key]){
                 any = true;
-                report.jitprof[key]++;
+                if(!merge[key]) {
+                  //if key is not counted yet
+                  merge[key] = jitInfo[key];
+                  report.jitprof[key]++;
+                }else {
+                  //in case needed, add real merge here
+                }
               }
             }
-            if(any){
+            //if merge has any output
+            if(!merge.any && any){
               report.jitprof.any++;
-            }else {
-              report.jitprof.none++;
+              report.jitprof.none--;
+              merge.any = true;
             }
           }
         }
