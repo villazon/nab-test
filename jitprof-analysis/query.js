@@ -166,14 +166,14 @@ MongoClient.connect(url, { useNewUrlParser: true }, function(err, client) {
           }
         }
       }
-      for(var key in uniqueProjects){
-        var prj = uniqueProjects[key];
-        if(prj.timedout) {
-          report.timeoutProjects++;
-        }
-      }
     }).finally(
       ()=>{client.close();
+        for(var key in uniqueProjects){
+          var prj = uniqueProjects[key];
+          if(prj.timedout) {
+            report.timeoutProjects++;
+          }
+        }
         console.log(JSON.stringify(report, null, 2));
       }
     );
