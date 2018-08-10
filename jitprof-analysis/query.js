@@ -168,6 +168,12 @@ MongoClient.connect(url, { useNewUrlParser: true }, function(err, client) {
       }
     }).finally(
       ()=>{client.close();
+        for(var key in prjData) {
+          var prjInfo = prjData[key];
+          if(!uniqueProjects[key]){
+            _assert(prjInfo.exitcode != 0);
+          }
+        }
         for(var key in uniqueProjects){
           var prj = uniqueProjects[key];
           if(prj.timedout) {
