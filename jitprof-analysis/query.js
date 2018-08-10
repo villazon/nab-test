@@ -196,14 +196,20 @@ MongoClient.connect(url, { useNewUrlParser: true }, function(err, client) {
     }).finally(
       ()=>{client.close();
         var failedTimeouts = {};
+        function atleastonesuccess(arr){
+          for(var a of arr){
+            if(a.exitcode == 0){
+              return true;
+            }
+          }
+          return false;
+        }
         for(var key in prjData2) {
           report.totalNumOfProjectsNodeOnly++;
           if(!prjData[key]){
             report.uniquePrjNodeOnly++;
           }else {
-            var info1 = prjData2[key][0];
-            var info2 = prjData[key][0];
-            if(info1.exitcode != 0 && info2.exitcode == 0){
+            if(atleastonesuccess(prjData[key]) && !atleastonesuccess(prjData2[key])) {
               report.failNodeOnlyOnly++;
             }
           }
@@ -213,17 +219,9 @@ MongoClient.connect(url, { useNewUrlParser: true }, function(err, client) {
           var prjInfo2 = prjData2[key];
           report.totalNumOfProjects++;
           if(!prjInfo2){
-            console.log("project "+key+" does not run in node only mode");
             report.uniquePrjNodeProf++;
-          }else if(prjInfo2[0].exitcode != prjInfo.exitcode){
-            //console.log("project "+key+" exit differently "+prjInfo2[0].exitcode+" != "+prjInfo.exitcode);
-            //_assert(typeof prjInfo2[0].exitcode == 'number', JSON.stringify(prjInfo2[0]));
-            if(prjInfo2[0].exitcode == 0) {
-              console.log("failure only in nodeprof "+key+prjInfo.exitcode);
-              report.failNodeProfOnly++;
-            }
-          }else {
-            //console.log("project "+key+" exit the same "+prjInfo2[0].exitcode+" == "+prjInfo.exitcode);
+          }else if(atleastonesuccess(prjData2[key]) && !atleastonesuccess(prjData[key])) {
+            report.failNodeProfOnly++;
           }
 
           if(!uniqueProjects[key]){
