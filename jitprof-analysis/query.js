@@ -16,17 +16,15 @@ MongoClient.connect(url, { useNewUrlParser: true }, function(err, client) {
   assert.equal(null, err);
   console.log("Connected successfully to server");
 
-  const db = client.db("NODEPROFDB");
-
-  const collections = db.collection("jitprof");
-  const db_ds = client.db("dsProject");
-  const projects = db_ds.collection("results");
 
 
   var jitprofData = {};
   var prjData = {};
+  var prjData2 = {};
 
   function getJITProfData(){
+    const db = client.db("NODEPROFDB");
+    const collections = db.collection("jitprof");
     return collections.find({}).toArray().then(
       values=>{
         for(var v of values){
@@ -39,6 +37,8 @@ MongoClient.connect(url, { useNewUrlParser: true }, function(err, client) {
     );
   }
   function getProjects(){
+    const db_ds = client.db("dsProject");
+    const projects = db_ds.collection("results");
     return projects.find({}).toArray().then(
       values=>{
         for(var v of values){
@@ -53,16 +53,39 @@ MongoClient.connect(url, { useNewUrlParser: true }, function(err, client) {
       }
     );
   }
+  function getProjects2(){
+    var db_ds = client.db("dsProject2");
+    var projects = db_ds.collection("results");
+    return projects.find({}).toArray().then(
+      values=>{
+        for(var v of values){
+          if(!prjData2[v.repo]){
+            prjData2[v.repo]=[];
+          }
+          prjData2[v.repo].push(v);
+        }
+        console.log("project data 2 fetched");
+        return prjData2;
+      }
+    );
+  }
 
   var p1 = getProjects();
-  var p2 = getJITProfData();
+  var p2 = getProjects2();
+  var p3 = getJITProfData();
 
 
   var report = {
     totalNumOfReports: 0,
     timeOutReports: 0,
     numOfReportsExit0: 0,
+
     totalNumOfProjects: 0,
+    totalNumOfProjectsNodeOnly: 0,
+
+    failNodeProfOnly: 0,
+    
+    totalNumOfProjectsWithReport: 0,
     timeoutProjects: 0,
     numOfProjectWithExit0: 0,
     jitprof: {
@@ -80,7 +103,7 @@ MongoClient.connect(url, { useNewUrlParser: true }, function(err, client) {
 
   var uniqueProjects = {};
 
-  Promise.all([p1,p2]).then(
+  Promise.all([p1,p2,p3]).then(
     ()=>{
       for(var _id of Object.keys(jitprofData)) {
         var jitInfo = jitprofData[_id];
@@ -115,7 +138,7 @@ MongoClient.connect(url, { useNewUrlParser: true }, function(err, client) {
 
           if(!uniqueProjects[jitInfo.reponame]) {
             uniqueProjects[jitInfo.reponame] = {valid:0, invalid:0, data: undefined, workers:{}, timedout: false};
-            report.totalNumOfProjects++;
+            report.totalNumOfProjectsWithReport++;
           }
           if(prjInfo.timedout == "true") {
             //worst guess
@@ -168,10 +191,34 @@ MongoClient.connect(url, { useNewUrlParser: true }, function(err, client) {
       }
     }).finally(
       ()=>{client.close();
+        var failedTimeouts = {};
+        for(var key in prjData2) {
+          report.totalNumOfProjectsNodeOnly++;
+        }
         for(var key in prjData) {
-          var prjInfo = prjData[key];
+          var prjInfo = prjData[key][0];
+          var prjInfo2 = prjData2[key];
+          report.totalNumOfProjects++;
+          if(!prjInfo2){
+            console.log("project "+key+" does not run in node only mode");
+          }else if(prjInfo2[0].exitcode != prjInfo.exitcode){
+            //console.log("project "+key+" exit differently "+prjInfo2[0].exitcode+" != "+prjInfo.exitcode);
+            if(prjInfo2[0].exitcode == "0") {
+              report.failNodeProfOnly++;
+            }
+          }else {
+            //console.log("project "+key+" exit the same "+prjInfo2[0].exitcode+" == "+prjInfo.exitcode);
+          }
+
           if(!uniqueProjects[key]){
-            _assert(prjInfo.exitcode != 0);
+            if(prjInfo.timedout == "true"){
+              if(!failedTimeouts[key]){
+                failedTimeouts[key] = true;
+                report.timeoutProjects++;
+              }
+            }else {
+              //not successful for other reasons
+            }
           }
         }
         for(var key in uniqueProjects){
