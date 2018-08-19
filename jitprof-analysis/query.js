@@ -88,6 +88,13 @@ MongoClient.connect(url, { useNewUrlParser: true }, function(err, client) {
 
     failNodeOnlyOnly: 0,
     failNodeProfOnly: 0,
+
+    //projects whose hash changed in two runs
+    hashDifferent:0,
+    //hash changed and fail in node only
+    hashDifferentNodeOnly: 0,
+    //hash changed and fail in nodeprof
+    hashDifferentNodeProf:0,
     
     totalNumOfProjectsWithReport: 0,
     timeoutProjects: 0,
@@ -102,7 +109,7 @@ MongoClient.connect(url, { useNewUrlParser: true }, function(err, client) {
       SwitchArrayType: 0,
       TrackHiddenClass: 0,
       TypedArray: 0,
-    }
+    },
   };
 
   var uniqueProjects = {};
@@ -209,8 +216,14 @@ MongoClient.connect(url, { useNewUrlParser: true }, function(err, client) {
           if(!prjData[key]){
             report.uniquePrjNodeOnly++;
           }else {
+            var hash1 = prjData[key][0].hash;
+            var hash2 = prjData2[key][0].hash;
             if(atleastonesuccess(prjData[key]) && !atleastonesuccess(prjData2[key])) {
+              console.log(key+" fail only with node");
               report.failNodeOnlyOnly++;
+              if(hash1 != hash2){
+                report.hashDifferentNodeOnly++;
+              }
             }
           }
         }
@@ -220,9 +233,21 @@ MongoClient.connect(url, { useNewUrlParser: true }, function(err, client) {
           report.totalNumOfProjects++;
           if(!prjInfo2){
             report.uniquePrjNodeProf++;
-          }else if(atleastonesuccess(prjData2[key]) && !atleastonesuccess(prjData[key])) {
-            report.failNodeProfOnly++;
+          }else {
+            var hash1 = prjInfo.hash;
+            var hash2 = prjInfo2[0].hash;
+            if(hash1 != hash2){
+              report.hashDifferent++
+            }
+            if(atleastonesuccess(prjData2[key]) && !atleastonesuccess(prjData[key])) {
+              report.failNodeProfOnly++;
+              console.log(key+" fail only with jitprof");
+              if(hash1 != hash2){
+                report.hashDifferentNodeProf++;
+              }
+            }
           }
+
 
           if(!uniqueProjects[key]){
             if(prjInfo.timedout == "true"){
