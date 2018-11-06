@@ -11,6 +11,8 @@ function _assert(cond, msg){
   }
 }
 
+var extraInfo = {};
+
 // Use connect method to connect to the server
 MongoClient.connect(url, { useNewUrlParser: true }).then(function(client) {
   //assert.equal(null, err);
@@ -22,13 +24,24 @@ MongoClient.connect(url, { useNewUrlParser: true }).then(function(client) {
   var prjData = {};
   var prjData2 = {};
 
+  function getModuleName(filePath) {
+    var npmIdx = filePath.lastIndexOf("node_modules/");
+    if(npmIdx < 0)
+      return "__app__";
+    var modulePath = filePath.substring(npmIdx+("node_modules/").length);
+    var end = modulePath.indexOf("/");
+    var moduleName = modulePath.substring(0, end);
+    return moduleName;
+  }
+
+
   function getJITProfData(){
-    const db = client.db("NODEPROFDB");
+    const db = client.db("cc-dsProject-jitprof-withmodule");
     const collections = db.collection("jitprof");
+
     return collections.find({}).toArray().then(
       values=>{
         for(var v of values){
-          //remove non-typed array and show only typed ones
           if(v.TypedArray){
             if(!v.TypedArray.TypedArray){
               delete v.TypedArray; //
@@ -36,16 +49,58 @@ MongoClient.connect(url, { useNewUrlParser: true }).then(function(client) {
               delete v.TypedArray.NonTypedArray; 
             }
           }
+          for(var a1 in v){
+            var b = v[a1];
+            for(var a2 in b) {
+            if(b[a2] && b[a2].num) {
+              //var key = a1+":"+a2;
+              var key = a1
+              if(!extraInfo[key]){
+                extraInfo[key] = {};
+                if(!extraInfo.general){
+                  extraInfo.general = {};
+                }
+              }
+              for(var file in b[a2]) {
+                if(file != "num") {
+                  var moduleName = getModuleName(file);
+                  if(moduleName == "__app__")
+                    continue;
+                  if(!extraInfo[key][moduleName]) {
+                    extraInfo[key][moduleName] = 0;
+                  }
+                  if(!extraInfo["general"][moduleName]) {
+                    extraInfo["general"][moduleName] = 0;
+                  }
+                  extraInfo[key][moduleName] += 1//b[a2][file];
+                  extraInfo["general"][moduleName] += 1//b[a2][file];
+                }
+              }
+            }
+            }
+          }
           jitprofData[v._id] = v;
         }
         console.log("jitprof data fetched");
+        for(var key in extraInfo){
+          var sortable = [];
+          for(var m in extraInfo[key]) {
+            sortable.push([m, extraInfo[key][m]]);
+          }
+
+          sortable.sort(function(a,b){
+            return b[1] - a[1];
+          });
+          console.log("[USI]", key, sortable.length, JSON.stringify(sortable.slice(0,10)));
+        }
+        //console.log(extraInfo);
         //console.log(jitprofData);
         return prjData;
       }
     );
   }
   function getProjects(){
-    const db_ds = client.db("dsProject");
+    const db_ds = client.db("cc-dsProject-jitprof-withmodule");
     const projects = db_ds.collection("results");
     return projects.find({}).toArray().then(
       values=>{
@@ -183,7 +238,7 @@ MongoClient.connect(url, { useNewUrlParser: true }).then(function(client) {
             if(uniqueProjects[jitInfo.reponame].valid == 0){
               uniqueProjects[jitInfo.reponame].data = {};
               report.numOfProjectWithExit0++;
-              console.log("USI "+jitInfo.reponame);
+              //console.log("USI "+jitInfo.reponame);
               report.jitprof.none++;
             }
             uniqueProjects[jitInfo.reponame].valid++;
@@ -237,7 +292,7 @@ MongoClient.connect(url, { useNewUrlParser: true }).then(function(client) {
             var hash1 = prjData[key][0].hash;
             var hash2 = prjData2[key][0].hash;
             if(atleastonesuccess(prjData[key]) && !atleastonesuccess(prjData2[key])) {
-              console.log(key+" fail only with node");
+              //console.log(key+" fail only with node");
               report.failNodeOnlyOnly++;
               if(hash1 != hash2){
                 report.hashDifferentNodeOnly++;
@@ -259,7 +314,7 @@ MongoClient.connect(url, { useNewUrlParser: true }).then(function(client) {
             }
             if(atleastonesuccess(prjData2[key]) && !atleastonesuccess(prjData[key])) {
               report.failNodeProfOnly++;
-              console.log(key+" fail only with jitprof");
+              //console.log(key+" fail only with jitprof");
               if(hash1 != hash2){
                 report.hashDifferentNodeProf++;
               }
