@@ -12,8 +12,8 @@ function _assert(cond, msg){
 }
 
 // Use connect method to connect to the server
-MongoClient.connect(url, { useNewUrlParser: true }).then(function(client) {
-  //assert.equal(null, err);
+MongoClient.connect(url, { useNewUrlParser: true }, function(err, client) {
+  assert.equal(null, err);
   console.log("Connected successfully to server");
 
 
@@ -28,16 +28,6 @@ MongoClient.connect(url, { useNewUrlParser: true }).then(function(client) {
     return collections.find({}).toArray().then(
       values=>{
         for(var v of values){
-          //remove non-typed array and show only typed ones
-          if(v.TypedArray){
-            if(!v.TypedArray.TypedArray){
-              delete v.TypedArray; //
-            }else if(v.TypedArray.NonTypedArray){
-              delete v.TypedArray.NonTypedArray; 
-            }
-          }
-          //if(Object.keys(v).length >= 4 + 7)
-          //  console.log(v);
           jitprofData[v._id] = v;
         }
         console.log("jitprof data fetched");
@@ -66,23 +56,16 @@ MongoClient.connect(url, { useNewUrlParser: true }).then(function(client) {
   function getProjects2(){
     var db_ds = client.db("dsProject2");
     var projects = db_ds.collection("results");
-    return projects.find({}).toArray().then(
-      values=>{
-        for(var v of values){
-          if(!prjData2[v.repo]){
-            prjData2[v.repo]=[];
-          }
-          prjData2[v.repo].push(v);
-        }
-        console.log("project data 2 fetched");
-        return prjData2;
-      }
-    );
+    projects.findOne({}, function(err, values) {
+      console.log(values);
+      client.close();
+    });
+    console.log("finish one");
   }
 
-  var p1 = getProjects();
+  //var p1 = getProjects();
   var p2 = getProjects2();
-  var p3 = getJITProfData();
+  //var p3 = getJITProfData();
 
 
   var report = {
@@ -124,9 +107,7 @@ MongoClient.connect(url, { useNewUrlParser: true }).then(function(client) {
 
   var uniqueProjects = {};
 
-  var anyM = {}
-  var noneM = {}
-
+  if(false)
   Promise.all([p1,p2,p3]).then(
     ()=>{
       for(var _id of Object.keys(jitprofData)) {
@@ -182,12 +163,9 @@ MongoClient.connect(url, { useNewUrlParser: true }).then(function(client) {
           }else {
             _assert(numExit0 == 1);
             report.numOfReportsExit0++;
-            if(Object.keys(jitInfo).length >= 4+7)
-              console.log(jitInfo);
             if(uniqueProjects[jitInfo.reponame].valid == 0){
               uniqueProjects[jitInfo.reponame].data = {};
               report.numOfProjectWithExit0++;
-              //console.log("USI "+jitInfo.reponame);
               report.jitprof.none++;
             }
             uniqueProjects[jitInfo.reponame].valid++;
@@ -212,12 +190,6 @@ MongoClient.connect(url, { useNewUrlParser: true }).then(function(client) {
               report.jitprof.any++;
               report.jitprof.none--;
               merge.any = true;
-              anyM[jitInfo.reponame] = true;
-              delete noneM[jitInfo.reponame];
-            }else {
-              if(!anyM[jitInfo.reponame]) {
-                noneM[jitInfo.reponame] = true;
-              }
             }
           }
         }
@@ -241,7 +213,7 @@ MongoClient.connect(url, { useNewUrlParser: true }).then(function(client) {
             var hash1 = prjData[key][0].hash;
             var hash2 = prjData2[key][0].hash;
             if(atleastonesuccess(prjData[key]) && !atleastonesuccess(prjData2[key])) {
-              //console.log(key+" fail only with node");
+              console.log(key+" fail only with node");
               report.failNodeOnlyOnly++;
               if(hash1 != hash2){
                 report.hashDifferentNodeOnly++;
@@ -263,7 +235,7 @@ MongoClient.connect(url, { useNewUrlParser: true }).then(function(client) {
             }
             if(atleastonesuccess(prjData2[key]) && !atleastonesuccess(prjData[key])) {
               report.failNodeProfOnly++;
-              //console.log(key+" fail only with jitprof");
+              console.log(key+" fail only with jitprof");
               if(hash1 != hash2){
                 report.hashDifferentNodeProf++;
               }
@@ -289,9 +261,6 @@ MongoClient.connect(url, { useNewUrlParser: true }).then(function(client) {
           }
         }
         console.log(JSON.stringify(report, null, 2));
-        //for(var key in noneM){
-          //console.log("USI " + key);
-        //}
       }
     );
 });

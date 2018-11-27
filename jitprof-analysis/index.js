@@ -46,7 +46,7 @@ report.addEntry = function(analysis, entryName, relatedFile, num) {
   }
   report[analysis][entryName].num+=num;
 
-  var moduleName = relatedFile.substring(1,relatedFile.indexOf(":")); //getModuleName(relatedFile);
+  var moduleName = relatedFile;//relatedFile.substring(1,relatedFile.indexOf(":")); //getModuleName(relatedFile);
   if(!report[analysis][entryName][moduleName]){
     report[analysis][entryName][moduleName] = 0;
   }
@@ -70,6 +70,7 @@ function dumpResult(exitCode){
   J$._jitprof.exitCode = exitCode;
   var f = "/tmp/jitprof_"+Math.floor((new Date).getTime());
   fs.writeFileSync(f, JSON.stringify(J$._jitprof));
+  console.log(JSON.stringify(J$._jitprof));
 }
 
 process.on('SIGINT', function(){

@@ -1,6 +1,9 @@
 {
   "name": "nab-test",
-  "dependencies": {},
+  "dependencies": {
+    "eslint": "^5.8.0",
+    "mongodb": "^3.1.1"
+  },
   "keywords": [],
   "license": "ISC",
   "repository": {

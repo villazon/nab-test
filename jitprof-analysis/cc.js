@@ -49,12 +49,16 @@ MongoClient.connect(url, { useNewUrlParser: true }).then(function(client) {
               delete v.TypedArray.NonTypedArray; 
             }
           }
+          var usedModules = {general: {}};
+          //if(Object.keys(v).length >= 7) {
+          //  console.log(v);
+          //}
           for(var a1 in v){
+            var key = a1
             var b = v[a1];
             for(var a2 in b) {
             if(b[a2] && b[a2].num) {
               //var key = a1+":"+a2;
-              var key = a1
               if(!extraInfo[key]){
                 extraInfo[key] = {};
                 if(!extraInfo.general){
@@ -66,32 +70,86 @@ MongoClient.connect(url, { useNewUrlParser: true }).then(function(client) {
                   var moduleName = getModuleName(file);
                   if(moduleName == "__app__")
                     continue;
+                  if(!usedModules[key]){
+                    usedModules[key] = {};
+                  }
+                  usedModules[key][moduleName] = true;
+                  usedModules["general"][moduleName] = true;
                   if(!extraInfo[key][moduleName]) {
-                    extraInfo[key][moduleName] = 0;
+                    extraInfo[key][moduleName] = {prj: 0, occ: 0};
                   }
                   if(!extraInfo["general"][moduleName]) {
-                    extraInfo["general"][moduleName] = 0;
+                    extraInfo["general"][moduleName] = {prj: 0, occ: 0};
                   }
-                  extraInfo[key][moduleName] += 1//b[a2][file];
-                  extraInfo["general"][moduleName] += 1//b[a2][file];
+                  extraInfo[key][moduleName].occ += b[a2][file];
+                  extraInfo["general"][moduleName].occ += b[a2][file];
                 }
               }
             }
             }
           }
+          for(var k in usedModules){
+            var ms = Object.keys(usedModules[k]);
+            for(var m of ms){
+              extraInfo[k][m].prj++;
+            }
+          }
           jitprofData[v._id] = v;
         }
         console.log("jitprof data fetched");
-        for(var key in extraInfo){
+
+        var entries = {AccessUndefArrayElem: "AccessUndefArrayElem", BinaryOpOnUndef: "BinaryOpOnUndef", NonContiguousArray: "NonContiguousArray", PolymorphicOperation: "PolymorphicFunCall", SwitchArrayType: "SwitchArrayType", InconsistentObjectLayout: "TrackHiddenClass", TypedArray: "TypedArray", general: "general"}
+        var listtimes = {};
+        for(var e in entries){
+          var key = entries[e];
           var sortable = [];
           for(var m in extraInfo[key]) {
-            sortable.push([m, extraInfo[key][m]]);
+            sortable.push([m, extraInfo[key][m].prj, extraInfo[key][m].occ]);
           }
 
           sortable.sort(function(a,b){
             return b[1] - a[1];
           });
-          console.log("[USI]", key, sortable.length, JSON.stringify(sortable.slice(0,10)));
+          console.log("[USI]", key, sortable.length, JSON.stringify(sortable.slice(0,5)));
+          var sliced = sortable.slice(0,5);
+          if(e == "general")
+            continue;
+          for(var a of sliced){
+            if(!listtimes[a[0]]){
+              listtimes[a[0]] = 0;
+            }
+            listtimes[a[0]]++;
+          }
+        }
+        console.log(listtimes);
+        for(var e in entries){
+          var key = entries[e];
+          var sortable = [];
+          for(var m in extraInfo[key]) {
+            sortable.push([m, extraInfo[key][m].prj, extraInfo[key][m].occ]);
+          }
+
+          sortable.sort(function(a,b){
+            return b[1] - a[1];
+          });
+          var sliced = sortable.slice(0,5);
+          //to latex
+          var ldata = ""
+          for(var elem of sliced){
+            ldata += " & ";
+            if(listtimes[elem[0]] > 1)
+              ldata += "\\textbf{"
+            ldata += "\\begin{tabular}[c]{@{}c@{}}"+elem[0]+"\\\\("+elem[1]+" / "+elem[2]+")\\end{tabular}";
+            if(listtimes[elem[0]] > 1)
+              ldata += "}";
+          }
+          if(e == "general") {
+            console.log("LATEX", "\\hline");
+            e = "At least one";
+          }else {
+            ldata += " \\\\"
+          }
+          console.log("LATEX", "\\code{"+e+"}", "& \\numprint{"+sortable.length+"}", ldata);
         }
         //console.log(extraInfo);
         //console.log(jitprofData);
