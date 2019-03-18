@@ -1,0 +1,105 @@
+db1 => nab info
+> db.getCollectionNames();
+[
+	"blackList", // not used
+	"crawlertotal", // not used
+	"doubles",// not used
+	"results",
+	"retryAnalysis", //not used
+	"system.indexes", //not used
+	"totalstats" // not used
+]
+
+where results look like:
+> db.results.findOne({});
+{
+	"_id" : ObjectId("5b68e37d7d9d800011860eb9"),
+	"worker" : "10.0.0.12-d758f93c8ea0",
+	"repo" : "hughfdjackson/doc-fn",
+	"starttime" : 1533600634548,
+	"endtime" : 1533600637031,
+	"exitcode" : 0,
+	"timedout" : "false",
+	"clonefailed" : false,
+	"static_analysis" : true,
+	"durationTime" : "3",
+	"duration" : 3,
+	"clone_duration" : 1,
+	"static_duration" : 0,
+	"dynamic_duration" : 2,
+	"hash" : "8c434e4bac7b460a444b18811450e5798ecfab7b",
+	"runID" : "NAB16511b0a550"
+}
+
+
+db2 => jitprof results
+> db.getCollectionNames();
+[
+	"blackList", // not used 
+	"crawlertotal", // not used
+	"doubles", // not used 
+	"jitprof",
+	"results",
+	"suitable", // not used
+	"system.indexes", // not used
+	"totalstats" // not used
+]
+
+where results look like:
+> db.results.findOne({});
+{
+	"_id" : ObjectId("5bde4bcfce4ff2001177d63e"),
+	"worker" : "10.0.0.20-732ce9a93b4a",
+	"repo" : "ikinsey3/333exp2",
+	"starttime" : 1541295048104,
+	"endtime" : 1541295055592,
+	"exitcode" : 0,
+	"timedout" : "false",
+	"clonefailed" : false,
+	"static_analysis" : true,
+	"durationTime" : "7",
+	"duration" : 7,
+	"clone_duration" : 1,
+	"static_duration" : 0,
+	"dynamic_duration" : 6,
+	"hash" : "4c7889f6e232b43027b040f5b5668a84e4566797",
+	"runID" : "NAB166dc57b338"
+}
+
+
+db3 => jitprof results with modules
+[ 
+  "jitprof", 
+  "results", 
+  "system.indexes"  // not used
+]
+
+where jitprof looks like:
+> db.jitprof.findOne({});
+{
+	"_id" : ObjectId("5bde4bf9d7093bea08d2fe42"),
+	"reponame" : "gillstrom/is-class-file",
+	"hash" : "36dd6ed08840b44f0c4fea528c4314fdf726b88a",
+	"worker" : "10.0.0.108-401162327eea",
+	"PolymorphicFunCall" : {
+		"Binary" : {
+			"num" : 1,
+			"node_modules/chalk/index.js" : 1
+		}
+	},
+	"TrackHiddenClass" : {
+		"_" : {
+			"num" : 130,
+			"node_modules/chalk/index.js" : 52,
+			"node_modules/log-symbols/node_modules/ansi-styles/index.js" : 26,
+			"node_modules/log-symbols/node_modules/chalk/index.js" : 52
+		}
+	},
+	"TypedArray" : {
+		"NonTypedArray" : {
+			"num" : 2,
+			"node_modules/ava/lib/runner.js" : 2
+		}
+	}
+}
+
