@@ -1,0 +1,22 @@
+only need a db to show the results collection of a project execution
+e.g.,
+db.results.findOne();
+{
+	"_id" : ObjectId("5bd37b51e89ca500116f1d79"),
+	"worker" : "10.0.0.29-3ea207cf4967",
+	"repo" : "bnoguchi/redis-node",
+	"starttime" : 1540586288529,
+	"endtime" : 1540586321489,
+	"exitcode" : 0,
+	"timedout" : "false",
+	"clonefailed" : false,
+	"static_analysis" : true,
+	"durationTime" : "33",
+	"duration" : 33,
+	"clone_duration" : 1,
+	"static_duration" : 0,
+	"dynamic_duration" : 32,
+	"hash" : "728b688bd4242e605ea3ff9e11ff029b1bf02162",
+	"runID" : "NAB166b2169b70"
+}
+
