@@ -214,7 +214,7 @@ MongoClient.connect(url, { useNewUrlParser: true }).then(function(client) {
               report.jitprof.none--;
               merge.any = true;
               anyM[jitInfo.reponame] = true;
-              // console.log("any project "+jitInfo.reponame);
+              console.log("any project ",jitInfo.reponame,jitInfo.hash);
               delete noneM[jitInfo.reponame];
             }else {
               if(!anyM[jitInfo.reponame]) {
