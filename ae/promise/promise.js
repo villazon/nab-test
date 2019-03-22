@@ -9,6 +9,8 @@ function _assert(cond, msg){
   }
 }
 
+let removeTrival= false;
+
 function Node (id, tick, name, type, loc) {
   this.id = id; // a unique id
   this.name = name; // name of the node to be shown as a text element near the node
@@ -284,8 +286,7 @@ function parseLog(log) {
     var node = graph.nodes[key];
     if(node.type == "P") {
       //remove solo promise nodes
-      let removeTrivial = true;
-      if(removeTrivial && Object.keys(node.outEdges).length == 0 && Object.keys(node.inEdges).length == 0){
+      if(Object.keys(node.outEdges).length == 0 && Object.keys(node.inEdges).length == 0){
         // delete graph.nodes[node.id];
         node.removed = true;
         continue;
@@ -307,7 +308,7 @@ function parseLog(log) {
         node.foreachOutEdge(test);
 
         // shall we remove promise chain of size 1
-        if(true && !hasPromiseNeighbor) {
+        if(removeTrival && !hasPromiseNeighbor) {
           // delete graph.nodes[node.id];
           node.removed = true;
           continue;
@@ -555,7 +556,7 @@ function splitLog(path){
       pid2lines[pid] += line+"\n";
     });
     delete pid2lines[firstPid];
-    // console.log("num processes "+Object.keys(pid2lines).length);
+    console.log("num processes "+Object.keys(pid2lines).length);
     return Object.values(pid2lines);
   }
 }
@@ -599,18 +600,18 @@ MongoClient.connect(url, { useNewUrlParser: true }).then(function(client) {
 
   Promise.all([p1,p2,p3]).then(
     () => {
-      // console.log("numExit0 "+Object.keys(exit0).length+" / "+Object.keys(prjData).length)
+      console.log("numExit0 "+Object.keys(exit0).length+" / "+Object.keys(prjData).length)
       for(var key in prjData) {
         // if(!exit0[key])
           // console.log("Non0Prj: "+key);
-        // if(exit0[key])
-          //  console.log("Exit0Prj: "+key);
+        if(exit0[key])
+          console.log("Exit0Prj: "+key);
       }
     }
   ).catch( e => {throw e;} )
   .finally( () => {
     client.close();
-    // console.log(Object.keys(prjData).length);
+    console.log(Object.keys(prjData).length);
     // return;
 
     var dir = "./NAB_RESULTS"
@@ -634,6 +635,8 @@ MongoClient.connect(url, { useNewUrlParser: true }).then(function(client) {
         if(!exitcode0)
           continue;
 
+        // console.log(prjData[u+"/"+p]);
+
         var prjReport = { numBreakdown:[0,0,0],moduleDistribution:{},max:0, path:u+"/"+p };
         for(var l of logs) {
           // console.log(dir+'/'+u+'/'+p+'/'+l);
@@ -643,10 +646,10 @@ MongoClient.connect(url, { useNewUrlParser: true }).then(function(client) {
           var results = splitLog(dir+'/'+u+'/'+p+'/'+l);
           for(var result of results) {
             i++;
-            // console.log("Running ["+(i)+"/"+(results.length)+"]");
+            console.log("Running ["+(i)+"/"+(results.length)+"]");
             try{
               var report = parseLog(result);
-              if(report.chainSizes.length == 0 || Math.max(...report.chainSizes) <= 1){
+              if(removeTrival && (report.chainSizes.length == 0 || Math.max(...report.chainSizes) <= 1)){
                 continue;
               }
               report.path = dir+'/'+u+'/'+p+'/'+l;
@@ -675,10 +678,10 @@ MongoClient.connect(url, { useNewUrlParser: true }).then(function(client) {
                 prjReport.moduleDistribution[key] += report.moduleDistribution[key];
               }
               // console.log(JSON.stringify(report));
-              // console.log(dir+'/'+u+'/'+p+'/'+l+"["+(i)+"/"+(results.length)+"]"+" Success!");
+              console.log(dir+'/'+u+'/'+p+'/'+l+"["+(i)+"/"+(results.length)+"]"+" Success!");
 
             } catch(e){
-              // console.log(dir+'/'+u+'/'+p+'/'+l+"["+(i)+"/"+(results.length)+"]"+" Fail! "+e);
+              console.log(dir+'/'+u+'/'+p+'/'+l+"["+(i)+"/"+(results.length)+"]"+" Fail! "+e);
               // console.trace(e);
             }
           }
@@ -699,16 +702,16 @@ MongoClient.connect(url, { useNewUrlParser: true }).then(function(client) {
         }
         if(prjReport.numBreakdown[0] > 0 || prjReport.numBreakdown[1] > 0) {
           moduleReport.numAnyPromise++;
-          console.log("any project", prjReport.path);
+          console.log("any project", prjReport.path, prjData[u+'/'+p][0].hash);
         }
         if(prjReport.numBreakdown[2] > 0) {
           moduleReport.numNPMPromise++;
         }
-        // console.log(JSON.stringify(prjReport));
+        console.log(JSON.stringify(prjReport));
       }
     }
 
-    // console.log(JSON.stringify(moduleReport));
+    console.log(JSON.stringify(moduleReport));
     var sortable = [];
     for(var key in moduleReport.numModulePromise) {
       sortable.push([key, moduleReport.numModulePromise[key]]);
@@ -718,8 +721,8 @@ MongoClient.connect(url, { useNewUrlParser: true }).then(function(client) {
         return b[1]- a[1];
     });
 
-    // console.log(sortable.length);
-    // console.log(JSON.stringify(sortable));
+    console.log(sortable.length);
+    console.log(JSON.stringify(sortable));
     for(var i = 0; i < sortable.length; i++) {
       console.log("ModuleRanking:", sortable[i][0], sortable[i][1])
     }
